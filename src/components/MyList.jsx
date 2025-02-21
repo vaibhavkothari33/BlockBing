@@ -1,11 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FaHeart, FaPlay, FaEthereum } from 'react-icons/fa';
 import { useMyList } from '../hooks/useMyList';
 import MovieSlug from './MovieSlug';
+import { useLoader } from '../contexts/LoaderContext';
 
 const MyList = () => {
   const { myList, removeFromList } = useMyList();
   const [selectedMovie, setSelectedMovie] = React.useState(null);
+  const { setIsLoading } = useLoader();
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [setIsLoading]);
 
   if (myList.length === 0) {
     return (
@@ -28,6 +38,7 @@ const MyList = () => {
             <div 
               key={movie.id}
               className="group relative bg-dark-lighter rounded-xl overflow-hidden cursor-pointer"
+              onClick={() => setSelectedMovie(movie)}
             >
               <div className="relative aspect-[2/3]">
                 <img
@@ -55,7 +66,6 @@ const MyList = () => {
                       </div>
                     </div>
                     <button 
-                      onClick={() => setSelectedMovie(movie)}
                       className="w-full bg-primary py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium"
                     >
                       <FaPlay className="inline mr-2" /> Watch Now

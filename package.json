@@ -19,6 +19,7 @@
     "buffer": "^6.0.3",
     "ethers": "^5.7.2",
     "firebase": "^11.3.1",
+    "framer-motion": "^12.4.7",
     "ogl": "^1.0.11",
     "process": "^0.11.10",
     "prop-types": "^15.8.1",

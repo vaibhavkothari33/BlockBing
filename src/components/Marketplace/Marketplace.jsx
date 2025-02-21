@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaEthereum, FaSearch, FaFilter } from 'react-icons/fa';
 import { useWeb3React } from '@web3-react/core';
 import MovieCard from './MovieCard';
 import { useWallet } from '../../context/WalletContext';
+import { useLoader } from '../../contexts/LoaderContext';
 
 const Marketplace = () => {
   const { active, account } = useWeb3React();
   const { connectWallet, isConnecting } = useWallet();
+  const { setIsLoading } = useLoader();
   const [filter, setFilter] = useState('all'); // all, forSale, owned
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Add loading effect when component mounts
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [setIsLoading]);
+
+  // Also add loading when filter changes
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [filter, setIsLoading]);
 
   const categories = [
     { id: 'all', name: 'All NFTs' },

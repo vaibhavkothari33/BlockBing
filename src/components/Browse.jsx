@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaEthereum, FaPlay, FaInfoCircle, FaHeart, FaFilter } from 'react-icons/fa';
 import MovieSlug from './MovieSlug';
+import { useLoader } from '../contexts/LoaderContext';
 
 const Browse = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -17,6 +18,7 @@ const Browse = () => {
     { id: 'drama', name: 'Drama', count: 0 },
     { id: 'scifi', name: 'Sci-Fi', count: 0 }
   ]);
+  const { setIsLoading } = useLoader();
 
   // Extended movie data with categories
   const movies = [
@@ -146,6 +148,15 @@ const Browse = () => {
     
     setFilteredMovies(filtered);
   }, [selectedCategory]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    // Simulate loading time
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [setIsLoading]);
 
   return (
     <div className="pt-16 min-h-screen bg-dark">

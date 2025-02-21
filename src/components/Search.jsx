@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaPlay, FaEthereum, FaHeart } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 import MovieSlug from './MovieSlug';
+import Loader from './Loader';
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [hoveredMovie, setHoveredMovie] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Movie data (you might want to move this to a separate file or context)
   const movies = [
@@ -116,28 +119,71 @@ const Search = () => {
     }
   ];
 
+  useEffect(() => {
+    // Simulate initial loading
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  }, []);
 
-  // Search functionality
+  // Search functionality with loading state
   useEffect(() => {
     const query = searchQuery.toLowerCase().trim();
-    if (!query) {
-      setSearchResults([]);
-      return;
-    }
+    setIsLoading(true);
 
-    const results = movies.filter(movie => 
-      movie.title.toLowerCase().includes(query) ||
-      movie.genre.toLowerCase().includes(query) ||
-      movie.description.toLowerCase().includes(query)
-    );
-    
-    setSearchResults(results);
+    // Simulate search delay
+    const searchTimeout = setTimeout(() => {
+      if (!query) {
+        setSearchResults([]);
+      } else {
+        const results = movies.filter(movie => 
+          movie.title.toLowerCase().includes(query) ||
+          movie.genre.toLowerCase().includes(query) ||
+          movie.description.toLowerCase().includes(query)
+        );
+        setSearchResults(results);
+      }
+      setIsLoading(false);
+    }, 300);
+
+    return () => clearTimeout(searchTimeout);
   }, [searchQuery]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-dark pt-16 px-4 sm:px-6 lg:px-8">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-dark pt-16 px-4 sm:px-6 lg:px-8"
+    >
+      <AnimatePresence>
+        {isLoading && <Loader />}
+      </AnimatePresence>
+
       {/* Search Header */}
-      <div className="max-w-4xl mx-auto">
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="max-w-4xl mx-auto"
+      >
         <div className="relative">
           <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           <input
@@ -148,26 +194,42 @@ const Search = () => {
             className="w-full bg-dark-lighter py-4 pl-12 pr-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-lg"
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Search Results */}
       <div className="max-w-7xl mx-auto mt-8">
-        {searchQuery && (
-          <h2 className="text-xl text-gray-300 mb-6">
-            {searchResults.length === 0 
-              ? 'No results found' 
-              : `Found ${searchResults.length} result${searchResults.length === 1 ? '' : 's'}`}
-          </h2>
-        )}
+        <AnimatePresence>
+          {searchQuery && (
+            <motion.h2
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="text-xl text-gray-300 mb-6"
+            >
+              {searchResults.length === 0 
+                ? 'No results found' 
+                : `Found ${searchResults.length} result${searchResults.length === 1 ? '' : 's'}`}
+            </motion.h2>
+          )}
+        </AnimatePresence>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"
+        >
           {searchResults.map((movie) => (
-            <div 
-              key={movie.id} 
+            <motion.div
+              key={movie.id}
+              variants={itemVariants}
+              layout
               className="group cursor-pointer"
               onMouseEnter={() => setHoveredMovie(movie.id)}
               onMouseLeave={() => setHoveredMovie(null)}
               onClick={() => setSelectedMovie(movie)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               <div className="relative aspect-[2/3] rounded-xl overflow-hidden mb-3">
                 <img
@@ -222,19 +284,21 @@ const Search = () => {
                 <span>•</span>
                 <span>{movie.duration}</span>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Movie Slug Modal */}
-      {selectedMovie && (
-        <MovieSlug 
-          movie={selectedMovie} 
-          onClose={() => setSelectedMovie(null)} 
-        />
-      )}
-    </div>
+      <AnimatePresence>
+        {selectedMovie && (
+          <MovieSlug 
+            movie={selectedMovie} 
+            onClose={() => setSelectedMovie(null)} 
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

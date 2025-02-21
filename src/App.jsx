@@ -15,17 +15,8 @@ import ClickSpark from './components/ClickSpark';
 import React, { useEffect } from 'react';
 import { WalletProvider } from './context/WalletContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoaderProvider } from './contexts/LoaderContext';
 
-// import Navbar from './components/Navbar';
-// import Auth from './components/Auth/Auth';
-// import LandingPage from './components/LandingPage';
-// import Browse from './components/Browse';
-// import Movies from './components/Movies';
-// import TVShows from './components/TVShows';
-// import MyList from './components/MyList';
-// import Search from './components/Search';
-// import Profile from './components/Profile';
-// import ClickSpark from './components/ClickSpark';
 
 function getLibrary(provider) {
   const library = new ethers.providers.Web3Provider(provider);
@@ -66,27 +57,29 @@ const App = () => {
     <AuthProvider>
       <Web3ReactProvider getLibrary={getLibrary}>
         <WalletProvider>
-          <div className="min-h-screen bg-dark">
-            <ClickSpark
-              sparkColor='#fff'
-              sparkSize={10}
-              sparkRadius={15}
-              sparkCount={8}
-              duration={400}
-            />
-            <Navbar />
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/browse" element={<ProtectedRoute><Browse /></ProtectedRoute>} />
-              <Route path="/movies" element={<ProtectedRoute><Movies /></ProtectedRoute>} />
-              {/* <Route path="/tv-shows" element={<TVShows />} /> */}
-              <Route path="/my-list" element={<ProtectedRoute><MyList /></ProtectedRoute>} />
-              <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-            </Routes>
-          </div>
+          <LoaderProvider>
+            <div className="min-h-screen bg-dark">
+              <ClickSpark
+                sparkColor='#fff'
+                sparkSize={10}
+                sparkRadius={15}
+                sparkCount={8}
+                duration={400}
+              />
+              <Navbar />
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/browse" element={<ProtectedRoute><Browse /></ProtectedRoute>} />
+                <Route path="/movies" element={<ProtectedRoute><Movies /></ProtectedRoute>} />
+                {/* <Route path="/tv-shows" element={<TVShows />} /> */}
+                <Route path="/my-list" element={<ProtectedRoute><MyList /></ProtectedRoute>} />
+                <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+              </Routes>
+            </div>
+          </LoaderProvider>
         </WalletProvider>
       </Web3ReactProvider>
     </AuthProvider>

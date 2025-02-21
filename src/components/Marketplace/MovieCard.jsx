@@ -1,18 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaEthereum } from 'react-icons/fa';
 import { useWeb3React } from '@web3-react/core';
+import { ethers } from 'ethers';
+import { getContract } from '../../utils/contract';
+import { useLoader } from '../../contexts/LoaderContext';
 
 const MovieCard = ({ nft, isOwner }) => {
-  const { active } = useWeb3React();
+  const { active, library } = useWeb3React();
+  const { setIsLoading } = useLoader();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleBuy = async () => {
-    // Implement buy functionality
-    console.log('Buying NFT:', nft.tokenId);
+    if (!active) return;
+    setIsProcessing(true);
+    setIsLoading(true);
+    
+    try {
+      const contract = getContract(library);
+      const tx = await contract.buyMovie(nft.tokenId, { 
+        value: ethers.utils.parseEther(nft.price.toString()) 
+      });
+      await tx.wait();
+      console.log('NFT bought:', nft.tokenId);
+    } catch (error) {
+      console.error('Error buying NFT:', error);
+    } finally {
+      setIsProcessing(false);
+      setIsLoading(false);
+    }
   };
 
   const handleSell = async () => {
-    // Implement sell functionality
-    console.log('Selling NFT:', nft.tokenId);
+    if (!active) return;
+    setIsProcessing(true);
+    setIsLoading(true);
+    
+    try {
+      const contract = getContract(library);
+      const tx = await contract.listMovie(
+        nft.tokenId, 
+        ethers.utils.parseEther(nft.price.toString())
+      );
+      await tx.wait();
+      console.log('NFT listed for sale:', nft.tokenId);
+    } catch (error) {
+      console.error('Error listing NFT for sale:', error);
+    } finally {
+      setIsProcessing(false);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,17 +77,27 @@ const MovieCard = ({ nft, isOwner }) => {
           isOwner ? (
             <button
               onClick={handleSell}
-              className="w-full bg-primary/20 text-primary py-2 rounded-lg hover:bg-primary/30 transition-colors"
+              disabled={isProcessing}
+              className={`w-full ${
+                isProcessing 
+                  ? 'bg-primary/20 cursor-not-allowed' 
+                  : 'bg-primary/20 hover:bg-primary/30'
+              } text-primary py-2 rounded-lg transition-colors`}
             >
-              {nft.forSale ? 'Update Price' : 'Sell NFT'}
+              {isProcessing ? 'Processing...' : nft.forSale ? 'Update Price' : 'Sell NFT'}
             </button>
           ) : (
             nft.forSale && (
               <button
                 onClick={handleBuy}
-                className="w-full bg-primary py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                disabled={isProcessing}
+                className={`w-full ${
+                  isProcessing 
+                    ? 'bg-primary/50 cursor-not-allowed' 
+                    : 'bg-primary hover:bg-primary/90'
+                } py-2 rounded-lg transition-colors`}
               >
-                Buy Now
+                {isProcessing ? 'Processing...' : 'Buy Now'}
               </button>
             )
           )
@@ -68,4 +114,4 @@ const MovieCard = ({ nft, isOwner }) => {
   );
 };
 
-export default MovieCard; 
+export default MovieCard;
