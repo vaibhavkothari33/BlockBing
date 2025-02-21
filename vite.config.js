@@ -18,4 +18,12 @@ export default defineConfig({
       usePolling: true,
     },
   },
+  build: {
+    rollupOptions: {
+      external: ['core-js'],
+    },
+  },
+  optimizeDeps: {
+    exclude: ['core-js'],
+  },
 })

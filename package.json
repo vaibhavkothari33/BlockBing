@@ -12,7 +12,7 @@
   "dependencies": {
     "@auth0/auth0-react": "^2.0.0",
     "@ethersproject/providers": "^5.7.0",
-    "@livepeer/react": "^2.9.2",
+    "@livepeer/react": "^2.8.0",
     "@videojs/http-streaming": "^3.0.0",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
@@ -35,14 +35,15 @@
     "util": "^0.12.5",
     "video.js": "^8.0.0",
     "web3": "^1.8.0",
-    "web3.storage": "^4.5.5"
+    "web3.storage": "^4.5.5",
+    "core-js": "^3.32.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.23",
     "tailwindcss": "^3.3.2",
-    "vite": "^4.3.9",
+    "vite": "^4.4.9",
     "vite-plugin-node-polyfills": "^0.7.0"
   }
 }
