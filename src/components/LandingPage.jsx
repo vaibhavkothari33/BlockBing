@@ -1,15 +1,62 @@
 import React, { useState } from 'react';
-import { FaPlay, FaEthereum, FaWallet, FaShieldAlt, FaFilm, FaSearch, FaPlayCircle, FaCode, FaGithub, FaLinkedin, FaArrowRight } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { FaPlay, FaEthereum, FaWallet, FaShieldAlt, FaFilm, FaSearch, FaPlayCircle, FaCode, FaGithub, FaLinkedin, FaArrowRight, FaUserCircle } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
 import { useWeb3React } from '@web3-react/core';
 import { injected, NETWORKS } from '../utils/connectors';
 import Squares from './Squares';
 import CircularGallery from './CircularGallery';
 import { useWallet } from '../context/WalletContext';
 import SpotlightCard from './SpotlightCard';
+import { useAuth } from '../contexts/AuthContext';
+
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading, loginWithGoogle } = useAuth();
   const { active } = useWeb3React();
   const { connectWallet, isConnecting, error } = useWallet();
+
+  // Function to handle the flow
+  const handleAction = async () => {
+    if (!active) {
+      await connectWallet();
+    } else if (!isAuthenticated) {
+      await loginWithGoogle();
+    } else {
+      navigate('/browse');
+    }
+  };
+
+  // Get the appropriate button text and state
+  const getButtonState = () => {
+    if (authLoading || isConnecting) {
+      return {
+        text: 'Loading...',
+        icon: <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>,
+        disabled: true
+      };
+    }
+    if (!active) {
+      return {
+        text: 'Connect Wallet',
+        icon: <FaWallet className="text-xl" />,
+        disabled: false
+      };
+    }
+    if (!isAuthenticated) {
+      return {
+        text: 'Sign In to Continue',
+        icon: <FaUserCircle className="text-xl" />,
+        disabled: false
+      };
+    }
+    return {
+      text: 'Start Watching',
+      icon: <FaPlay className="text-xl" />,
+      disabled: false
+    };
+  };
+
+  const buttonState = getButtonState();
 
   return (
     <div className="relative min-h-screen w-full">
@@ -38,42 +85,45 @@ const LandingPage = () => {
             Experience the future of streaming with our decentralized pay-per-view platform.
             Watch premium content using cryptocurrency, with no subscriptions required.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8 px-4">
-            <Link
-              to="/browse"
-              className="flex items-center justify-center gap-2 bg-primary px-6 py-3 md:px-8 md:py-4 rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto"
-            >
-              <FaPlay />
-              <span>Browse Content</span>
-            </Link>
-            {active ? (
-              <button className="flex items-center justify-center gap-2 bg-green-500/20 text-green-400 px-6 py-3 md:px-8 md:py-4 rounded-lg transition-colors w-full sm:w-auto">
-                <FaWallet />
-                <span>Connected</span>
-              </button>
-            ) : (
-              <button
-                onClick={connectWallet}
-                disabled={isConnecting}
-                className="flex items-center justify-center gap-2 bg-gray-500/50 px-6 py-3 md:px-8 md:py-4 rounded-lg hover:bg-gray-500/70 transition-colors backdrop-blur-sm w-full sm:w-auto"
-              >
-                {isConnecting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Connecting...</span>
-                  </>
-                ) : (
-                  <>
-                    <FaWallet />
-                    <span>Connect Wallet</span>
-                  </>
-                )}
-              </button>
-            )}
+
+          {/* Progress Steps */}
+          <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-8">
+            <div className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
+              active ? 'bg-green-500/20 text-green-400' : 'bg-dark-lighter text-white'
+            }`}>
+              <FaWallet className="text-xl" />
+              <span>1. Connect Wallet</span>
+              {active && <span className="ml-2">✓</span>}
+            </div>
+            <div className="hidden md:block text-gray-500">→</div>
+            <div className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
+              isAuthenticated ? 'bg-green-500/20 text-green-400' : 'bg-dark-lighter text-white'
+            }`}>
+              <FaUserCircle className="text-xl" />
+              <span>2. Sign In</span>
+              {isAuthenticated && <span className="ml-2">✓</span>}
+            </div>
+            <div className="hidden md:block text-gray-500">→</div>
+            <div className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
+              !active || !isAuthenticated ? 'opacity-50 cursor-not-allowed' : 'bg-primary text-white'
+            }`}>
+              <FaPlay className="text-xl" />
+              <span>3. Start Watching</span>
+            </div>
           </div>
 
+          {/* Action Button */}
+          <button
+            onClick={handleAction}
+            disabled={buttonState.disabled}
+            className="flex items-center justify-center gap-2 bg-primary px-8 py-4 rounded-lg hover:bg-primary/90 transition-colors mx-auto text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {buttonState.icon}
+            <span>{buttonState.text}</span>
+          </button>
+
           {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm mx-4">
+            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm">
               {error}
             </div>
           )}
@@ -82,7 +132,7 @@ const LandingPage = () => {
 
       <div className="py-12">
         <h2 className="text-3xl font-bold text-center mb-8">Choose from a Wide Variety of Movies</h2>
-        <div style={{ height: '600px', position: 'relative' }}>
+        <div style={{ height: '600px', position: 'relative', overflowY: 'hidden', touchAction: 'none' }} onWheel={(e) => e.preventDefault()}>
           <Link to="/browse">
             <CircularGallery bend={3} textColor="#ffffff" borderRadius={0.05} />
           </Link>
@@ -404,7 +454,7 @@ const LandingPage = () => {
               <div className="w-32 h-32 rounded-full bg-dark mx-auto mb-6 flex items-center justify-center">
                 <FaCode className="text-4xl text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Navya Singh</h3>
+              <h3 className="text-xl font-semibold mb-2">Navya Rathore</h3>
               <p className="text-gray-400 mb-4">Lead Developer</p>
               <div className="flex justify-center gap-4">
                 <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary">
@@ -424,7 +474,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="relative py-12 px-4 sm:px-8 md:px-16 text-center">
         <div className="max-w-7xl mx-auto">
-          <p className="text-gray-400">© 2025 Payper. All rights reserved.</p>
+          <p className="text-gray-400">© 2025 BlockBinge. All rights reserved.</p>
         </div>
       </footer>
     </div>

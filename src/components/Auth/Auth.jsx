@@ -1,29 +1,25 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth0 } from '@auth0/auth0-react';
 import { FaGoogle } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
 import Squares from '../Squares';
 
 const Auth = () => {
-  const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
+  const { loginWithGoogle, isAuthenticated, isLoading, error } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check if user is authenticated and loading is complete
-    if (isAuthenticated && !isLoading) {
-      navigate('/browse');
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, navigate]);
 
-  const handleLogin = () => {
-    loginWithRedirect({
-      appState: { returnTo: '/browse' }
-    });
-  };
-
-  // If still loading, you might want to show a loading state
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-dark">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+      </div>
+    );
   }
 
   return (
@@ -41,10 +37,15 @@ const Auth = () => {
 
       {/* Auth Card */}
       <div className="relative z-10 w-full max-w-md p-8 bg-dark-lighter rounded-2xl shadow-xl backdrop-blur-sm">
-        <h2 className="text-2xl font-bold text-center mb-6">Sign in to Continue</h2>
+        <h2 className="text-2xl font-bold text-center mb-8">Welcome to Payper</h2>
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm">
+            {error}
+          </div>
+        )}
         <button
-          onClick={handleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-primary py-3 rounded-lg hover:bg-primary/90 transition-colors"
+          onClick={loginWithGoogle}
+          className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 py-3 rounded-lg hover:bg-gray-100 transition-colors"
         >
           <FaGoogle className="text-xl" />
           <span>Continue with Google</span>

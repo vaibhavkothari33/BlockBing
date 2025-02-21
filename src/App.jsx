@@ -1,6 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
-import { Auth0Provider } from '@auth0/auth0-react';
-import { Web3ReactProvider } from '@web3-react/core';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
 import Navbar from './components/Navbar';
 import Auth from './components/Auth/Auth';
@@ -13,8 +12,9 @@ import Search from './components/Search';
 import Profile from './components/Profile';
 import Marketplace from './components/Marketplace/Marketplace';
 import ClickSpark from './components/ClickSpark';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { WalletProvider } from './context/WalletContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // import Navbar from './components/Navbar';
 // import Auth from './components/Auth/Auth';
@@ -33,18 +33,37 @@ function getLibrary(provider) {
   return library;
 }
 
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const { active } = useWeb3React();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate('/auth');
+    } else if (isAuthenticated && !active) {
+      navigate('/');
+    }
+  }, [isAuthenticated, active, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-dark">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !active) {
+    return null;
+  }
+
+  return children;
+};
+
 const App = () => {
   return (
-    <Auth0Provider
-      domain={import.meta.env.VITE_AUTH0_DOMAIN}
-      clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
-      authorizationParams={{
-        redirect_uri: window.location.origin,
-        scope: "openid profile email"
-      }}
-      useRefreshTokens={true}
-      cacheLocation="localstorage"
-    >
+    <AuthProvider>
       <Web3ReactProvider getLibrary={getLibrary}>
         <WalletProvider>
           <div className="min-h-screen bg-dark">
@@ -59,18 +78,18 @@ const App = () => {
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/browse" element={<Browse />} />
-              <Route path="/movies" element={<Movies />} />
+              <Route path="/browse" element={<ProtectedRoute><Browse /></ProtectedRoute>} />
+              <Route path="/movies" element={<ProtectedRoute><Movies /></ProtectedRoute>} />
               {/* <Route path="/tv-shows" element={<TVShows />} /> */}
-              <Route path="/my-list" element={<MyList />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/my-list" element={<ProtectedRoute><MyList /></ProtectedRoute>} />
+              <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
             </Routes>
           </div>
         </WalletProvider>
       </Web3ReactProvider>
-    </Auth0Provider>
+    </AuthProvider>
   );
 };
 

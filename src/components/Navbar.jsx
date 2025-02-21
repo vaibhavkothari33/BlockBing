@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaSearch, FaUserCircle } from 'react-icons/fa';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useAuth } from '../contexts/AuthContext';
 import WalletConnect from './WalletConnect';
 
 const Navbar = () => {
   const location = useLocation();
-  const { isAuthenticated, user, logout, isLoading } = useAuth0();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
 
   // Don't show navbar on landing page
   if (location.pathname === '/') return null;
@@ -73,29 +73,38 @@ const Navbar = () => {
             {isAuthenticated ? (
               <div className="relative group">
                 <button className="flex items-center space-x-2">
-                  {user?.picture ? (
-                    <img
-                      src={user.picture}
-                      alt={user.name}
-                      className="h-8 w-8 rounded-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = ''; // Set a default avatar image URL here
-                        e.target.className = 'hidden';
-                        e.target.nextSibling.className = 'h-8 w-8 text-gray-400';
-                      }}
-                    />
+                  {user?.photoURL ? (
+                    <div className="relative w-8 h-8 rounded-full overflow-hidden">
+                      <img
+                        src={user.photoURL}
+                        alt={user.displayName || 'User'}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = ''; // Fallback to icon if image fails
+                          e.target.onerror = null;
+                          e.target.className = 'hidden';
+                          e.target.nextSibling.className = 'block';
+                        }}
+                      />
+                      <FaUserCircle className="hidden absolute inset-0 w-full h-full text-gray-400" />
+                    </div>
                   ) : (
                     <FaUserCircle className="h-8 w-8 text-gray-400" />
                   )}
                 </button>
                 <div className="absolute right-0 mt-2 w-48 bg-dark-lighter rounded-md shadow-lg py-1 hidden group-hover:block">
                   <div className="px-4 py-2 border-b border-gray-700">
-                    <p className="text-sm font-medium">{user?.name || 'User'}</p>
+                    <p className="text-sm font-medium">{user?.displayName || 'User'}</p>
                     <p className="text-xs text-gray-400">{user?.email}</p>
                   </div>
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-2 text-sm text-gray-300 hover:bg-dark-light"
+                  >
+                    Profile
+                  </Link>
                   <button
-                    onClick={() => logout({ returnTo: window.location.origin })}
+                    onClick={() => logout()}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-dark-light"
                   >
                     Logout

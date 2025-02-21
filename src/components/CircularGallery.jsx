@@ -328,21 +328,42 @@ class App {
   }
   createMedias(items, bend = 1, textColor, borderRadius, font) {
     const defaultItems = [
-      { image: 'https://m.media-amazon.com/images/M/MV5BMTYzOTE2NjkxN15BMl5BanBnXkFtZTgwMDgzMTg0MzE@._V1_.jpg', text: 'Drama' },
-      { image: 'https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_.jpg', text: 'Action' },
-      { image: 'https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQovCe0H45fWwAtV31ajOdXRPTxSsMQgPIQ3lcZX_mAW0jXV3kH', text: 'Sci-Fi' },
-      { image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTj6_ot-pRVfLMtc2vyguVf_0m0HUuvdBw2I-EuFXkUIEB_eoAS', text: 'Crime' },
-      { image: 'https://i.pinimg.com/736x/72/63/b1/7263b173ba96ffc2d8527a0227937e81.jpg', text: 'Romance' },
-      { image: 'https://m.media-amazon.com/images/I/41CRfXsE8SL.jpg', text: 'Thriller' },
-      { image: 'https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQovCe0H45fWwAtV31ajOdXRPTxSsMQgPIQ3lcZX_mAW0jXV3kH', text: 'Adventure' },
-      { image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5DoFtShSmClflZ0RzBj9JBMweU5IUVBCeEbbLeV2XPlCnTKNi', text: 'Fantasy' },
-      { image: 'https://m.media-amazon.com/images/M/MV5BMTYzOTE2NjkxN15BMl5BanBnXkFtZTgwMDgzMTg0MzE@._V1_.jpg', text: 'Comedy' },
-      { image: 'https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_.jpg', text: 'Horror' },
-      { image: 'https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQovCe0H45fWwAtV31ajOdXRPTxSsMQgPIQ3lcZX_mAW0jXV3kH', text: 'Documentary' },
-      { image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTj6_ot-pRVfLMtc2vyguVf_0m0HUuvdBw2I-EuFXkUIEB_eoAS', text: 'Animation' }
-    ]
-    const galleryItems = items && items.length ? items : defaultItems
-    this.mediasImages = galleryItems.concat(galleryItems)
+      { 
+        image: 'https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_.jpg',
+        text: 'Action'
+      },
+      { 
+        image: 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_.jpg',
+        text: 'Sci-Fi'
+      },
+      { 
+        image: 'https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg',
+        text: 'Adventure'
+      },
+      { 
+        image: 'https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg',
+        text: 'Drama'
+      },
+      { 
+        image: 'https://m.media-amazon.com/images/M/MV5BMjMxNjY2MDU1OV5BMl5BanBnXkFtZTgwNzY1MTUwNTM@._V1_.jpg',
+        text: 'Fantasy'
+      },
+      { 
+        image: 'https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_.jpg',
+        text: 'Superhero'
+      },
+      { 
+        image: 'https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNWYtYzZlODY3ZTk3OTFlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_.jpg',
+        text: 'Crime'
+      },
+      { 
+        image: 'https://m.media-amazon.com/images/M/MV5BNGNhMDIzZTUtNTBlZi00MTRlLWFjM2ItYzViMjE3YzI5MjljXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_.jpg',
+        text: 'Comedy'
+      }
+    ];
+
+    const galleryItems = items && items.length ? items : defaultItems;
+    this.mediasImages = galleryItems.concat(galleryItems);
     this.medias = this.mediasImages.map((data, index) => {
       return new Media({
         geometry: this.planeGeometry,
@@ -359,8 +380,8 @@ class App {
         textColor,
         borderRadius,
         font
-      })
-    })
+      });
+    });
   }
   onTouchDown(e) {
     this.isDown = true
@@ -376,10 +397,6 @@ class App {
   onTouchUp() {
     this.isDown = false
     this.onCheck()
-  }
-  onWheel() {
-    this.scroll.target += 2
-    this.onCheckDebounce()
   }
   onCheck() {
     if (!this.medias || !this.medias[0]) return
@@ -423,13 +440,10 @@ class App {
   }
   addEventListeners() {
     this.boundOnResize = this.onResize.bind(this)
-    this.boundOnWheel = this.onWheel.bind(this)
     this.boundOnTouchDown = this.onTouchDown.bind(this)
     this.boundOnTouchMove = this.onTouchMove.bind(this)
     this.boundOnTouchUp = this.onTouchUp.bind(this)
     window.addEventListener('resize', this.boundOnResize)
-    window.addEventListener('mousewheel', this.boundOnWheel)
-    window.addEventListener('wheel', this.boundOnWheel)
     window.addEventListener('mousedown', this.boundOnTouchDown)
     window.addEventListener('mousemove', this.boundOnTouchMove)
     window.addEventListener('mouseup', this.boundOnTouchUp)
@@ -440,8 +454,6 @@ class App {
   destroy() {
     window.cancelAnimationFrame(this.raf)
     window.removeEventListener('resize', this.boundOnResize)
-    window.removeEventListener('mousewheel', this.boundOnWheel)
-    window.removeEventListener('wheel', this.boundOnWheel)
     window.removeEventListener('mousedown', this.boundOnTouchDown)
     window.removeEventListener('mousemove', this.boundOnTouchMove)
     window.removeEventListener('mouseup', this.boundOnTouchUp)
