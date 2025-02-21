@@ -6,115 +6,101 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract MovieNFT is ERC721URIStorage, ReentrancyGuard, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
-
+contract MovieStreaming is ReentrancyGuard, Ownable {
     struct Movie {
         string title;
-        string uri;
-        uint256 price;
-        bool forSale;
-        string description;
-        string genre;
-        uint256 year;
-        string duration;
+        uint256 pricePerMinute;
+        string playbackId;
+        bool isActive;
+    }
+
+    struct ViewSession {
+        uint256 startTime;
+        uint256 depositAmount;
+        bool isActive;
     }
 
     mapping(uint256 => Movie) public movies;
-    mapping(address => uint256[]) public userMovies;
+    mapping(address => mapping(uint256 => ViewSession)) public viewSessions;
+    
+    uint256 public movieCount;
+    uint256 public constant MINIMUM_DEPOSIT = 0.001 ether;
 
-    event MovieMinted(uint256 tokenId, string title, address owner);
-    event MovieListed(uint256 tokenId, uint256 price);
-    event MovieSold(uint256 tokenId, address buyer, uint256 price);
-    event PriceUpdated(uint256 tokenId, uint256 newPrice);
+    event MovieAdded(uint256 movieId, string title, uint256 pricePerMinute);
+    event ViewingStarted(address viewer, uint256 movieId, uint256 startTime, uint256 deposit);
+    event ViewingEnded(address viewer, uint256 movieId, uint256 duration, uint256 cost, uint256 refund);
 
-    constructor() ERC721("Movie NFT", "MNFT") {}
+    function addMovie(
+        string memory _title,
+        uint256 _pricePerMinute,
+        string memory _playbackId
+    ) external onlyOwner {
+        movieCount++;
+        movies[movieCount] = Movie({
+            title: _title,
+            pricePerMinute: _pricePerMinute,
+            playbackId: _playbackId,
+            isActive: true
+        });
 
-    function mintMovie(
-        string memory title,
-        string memory uri,
-        uint256 price,
-        string memory description,
-        string memory genre,
-        uint256 year,
-        string memory duration
-    ) public onlyOwner returns (uint256) {
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
-        
-        _mint(msg.sender, newTokenId);
-        _setTokenURI(newTokenId, uri);
-        
-        movies[newTokenId] = Movie(
-            title,
-            uri,
-            price,
-            true,
-            description,
-            genre,
-            year,
-            duration
-        );
-        
-        userMovies[msg.sender].push(newTokenId);
-        emit MovieMinted(newTokenId, title, msg.sender);
-        return newTokenId;
+        emit MovieAdded(movieCount, _title, _pricePerMinute);
     }
 
-    function buyMovie(uint256 tokenId) public payable nonReentrant {
-        require(_exists(tokenId), "Movie does not exist");
-        Movie storage movie = movies[tokenId];
-        require(movie.forSale, "Movie is not for sale");
-        require(msg.value >= movie.price, "Insufficient payment");
-        
-        address seller = ownerOf(tokenId);
-        _transfer(seller, msg.sender, tokenId);
-        payable(seller).transfer(msg.value);
-        
-        // Update ownership records
-        removeFromUserMovies(seller, tokenId);
-        userMovies[msg.sender].push(tokenId);
-        
-        movie.forSale = false;
-        emit MovieSold(tokenId, msg.sender, msg.value);
+    function startViewing(uint256 _movieId) external payable nonReentrant {
+        require(movies[_movieId].isActive, "Movie not available");
+        require(msg.value >= MINIMUM_DEPOSIT, "Insufficient deposit");
+        require(!viewSessions[msg.sender][_movieId].isActive, "Session already active");
+
+        viewSessions[msg.sender][_movieId] = ViewSession({
+            startTime: block.timestamp,
+            depositAmount: msg.value,
+            isActive: true
+        });
+
+        emit ViewingStarted(msg.sender, _movieId, block.timestamp, msg.value);
     }
 
-    function listMovie(uint256 tokenId, uint256 price) public {
-        require(ownerOf(tokenId) == msg.sender, "Not the owner");
-        require(price > 0, "Price must be greater than 0");
+    function endViewing(uint256 _movieId) external nonReentrant {
+        ViewSession storage session = viewSessions[msg.sender][_movieId];
+        require(session.isActive, "No active session");
+
+        uint256 duration = (block.timestamp - session.startTime) / 60; // Duration in minutes
+        uint256 cost = duration * movies[_movieId].pricePerMinute;
         
-        movies[tokenId].price = price;
-        movies[tokenId].forSale = true;
+        require(cost <= session.depositAmount, "Insufficient deposit");
         
-        emit MovieListed(tokenId, price);
-    }
+        uint256 refund = session.depositAmount - cost;
+        session.isActive = false;
 
-    function updatePrice(uint256 tokenId, uint256 newPrice) public {
-        require(ownerOf(tokenId) == msg.sender, "Not the owner");
-        require(newPrice > 0, "Price must be greater than 0");
-        
-        movies[tokenId].price = newPrice;
-        emit PriceUpdated(tokenId, newPrice);
-    }
-
-    function getUserMovies(address user) public view returns (uint256[] memory) {
-        return userMovies[user];
-    }
-
-    function getMovie(uint256 tokenId) public view returns (Movie memory) {
-        require(_exists(tokenId), "Movie does not exist");
-        return movies[tokenId];
-    }
-
-    function removeFromUserMovies(address user, uint256 tokenId) internal {
-        uint256[] storage userTokens = userMovies[user];
-        for (uint256 i = 0; i < userTokens.length; i++) {
-            if (userTokens[i] == tokenId) {
-                userTokens[i] = userTokens[userTokens.length - 1];
-                userTokens.pop();
-                break;
-            }
+        if (cost > 0) {
+            (bool success, ) = owner().call{value: cost}("");
+            require(success, "Transfer to owner failed");
         }
+
+        if (refund > 0) {
+            (bool success, ) = msg.sender.call{value: refund}("");
+            require(success, "Refund transfer failed");
+        }
+
+        emit ViewingEnded(msg.sender, _movieId, duration, cost, refund);
+    }
+
+    function getMovie(uint256 _movieId) external view returns (
+        string memory title,
+        uint256 pricePerMinute,
+        string memory playbackId,
+        bool isActive
+    ) {
+        Movie memory movie = movies[_movieId];
+        return (movie.title, movie.pricePerMinute, movie.playbackId, movie.isActive);
+    }
+
+    function getActiveSession(address _viewer, uint256 _movieId) external view returns (
+        uint256 startTime,
+        uint256 depositAmount,
+        bool isActive
+    ) {
+        ViewSession memory session = viewSessions[_viewer][_movieId];
+        return (session.startTime, session.depositAmount, session.isActive);
     }
 }

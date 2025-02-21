@@ -1,65 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { FaTimes } from 'react-icons/fa';
-import VideoPlayer from './VideoPlayer';
-import screenfull from 'screenfull';
+import VideoPlayer from './VideoPlayer/VideoPlayer';
 
-const VideoSlug = ({ movie, videoSource, onClose }) => {
-  const [isFullscreen, setIsFullscreen] = useState(false);
+const VideoSlug = ({ movie, onClose }) => {
+  console.log("VideoSlug received movie:", movie); // Debug log
 
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(screenfull.isFullscreen);
-    };
-
-    if (screenfull.isEnabled) {
-      screenfull.on('change', handleFullscreenChange);
-    }
-
-    return () => {
-      if (screenfull.isEnabled) {
-        screenfull.off('change', handleFullscreenChange);
-      }
-    };
-  }, []);
+  if (!movie || !movie.playbackId) {
+    console.error("Missing movie data or playbackId");
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm">
-      <div className="flex flex-col h-screen">
-        {/* Header - Hide in fullscreen */}
-        {!isFullscreen && (
-          <div className="flex items-center justify-between px-4 py-3 bg-dark-lighter/80 backdrop-blur-sm">
-            <div>
-              <h2 className="text-lg font-semibold">{movie.title}</h2>
-              <p className="text-xs text-gray-400">{movie.duration}</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <FaTimes className="text-xl" />
-            </button>
-          </div>
-        )}
+    <div className="fixed inset-0 bg-black/90 z-50">
+      <div className="relative h-full">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 text-white/80 hover:text-white"
+        >
+          <FaTimes className="text-2xl" />
+        </button>
 
-        {/* Video Container */}
-        <div className={`flex-1 bg-black flex items-center ${isFullscreen ? 'h-screen' : ''}`}>
-          <div className={`w-full relative ${isFullscreen ? 'h-full' : 'h-0 pb-[56.25%]'}`}>
-            <div className="absolute inset-0">
-              <VideoPlayer
-                src={videoSource}
-                poster={movie.image}
-              />
-            </div>
-          </div>
+        <div className="h-full">
+          <VideoPlayer 
+            playbackId={movie.playbackId}
+            poster={movie.image}
+            title={movie.title}
+            movie={movie}
+          />
         </div>
-
-        {/* Footer */}
-        {/* <div className="p-4 bg-dark-lighter/80 backdrop-blur-sm">
-          <div className="max-w-[1920px] mx-auto">
-            <h3 className="font-medium mb-2">About this movie</h3>
-            <p className="text-sm text-gray-400 line-clamp-2">{movie.description}</p>
-          </div>
-        </div> */}
       </div>
     </div>
   );

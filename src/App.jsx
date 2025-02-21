@@ -16,7 +16,13 @@ import React, { useEffect } from 'react';
 import { WalletProvider } from './context/WalletContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoaderProvider } from './contexts/LoaderContext';
+import { LivepeerConfig, createReactClient, studioProvider } from '@livepeer/react';
 
+const livepeerClient = createReactClient({
+  provider: studioProvider({
+    apiKey: import.meta.env.VITE_LIVEPEER_API_KEY
+  }),
+});
 
 function getLibrary(provider) {
   const library = new ethers.providers.Web3Provider(provider);
@@ -57,29 +63,31 @@ const App = () => {
     <AuthProvider>
       <Web3ReactProvider getLibrary={getLibrary}>
         <WalletProvider>
-          <LoaderProvider>
-            <div className="min-h-screen bg-dark">
-              <ClickSpark
-                sparkColor='#fff'
-                sparkSize={10}
-                sparkRadius={15}
-                sparkCount={8}
-                duration={400}
-              />
-              <Navbar />
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/browse" element={<ProtectedRoute><Browse /></ProtectedRoute>} />
-                <Route path="/movies" element={<ProtectedRoute><Movies /></ProtectedRoute>} />
-                {/* <Route path="/tv-shows" element={<TVShows />} /> */}
-                <Route path="/my-list" element={<ProtectedRoute><MyList /></ProtectedRoute>} />
-                <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-              </Routes>
-            </div>
-          </LoaderProvider>
+          <LivepeerConfig client={livepeerClient}>
+            <LoaderProvider>
+              <div className="min-h-screen bg-dark">
+                <ClickSpark
+                  sparkColor='#fff'
+                  sparkSize={10}
+                  sparkRadius={15}
+                  sparkCount={8}
+                  duration={400}
+                />
+                <Navbar />
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/browse" element={<ProtectedRoute><Browse /></ProtectedRoute>} />
+                  <Route path="/movies" element={<ProtectedRoute><Movies /></ProtectedRoute>} />
+                  {/* <Route path="/tv-shows" element={<TVShows />} /> */}
+                  <Route path="/my-list" element={<ProtectedRoute><MyList /></ProtectedRoute>} />
+                  <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+                </Routes>
+              </div>
+            </LoaderProvider>
+          </LivepeerConfig>
         </WalletProvider>
       </Web3ReactProvider>
     </AuthProvider>
