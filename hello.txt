@@ -1,0 +1,9 @@
+i need to make a streaming app like netflix using vite react and tailwind css and use appwrite for the backend database and authentication and storage 
+also this is very different from netflix this is a blockchain based streaming webiste in this the user will pay as fer view the movie and we will have action triggesser through reactive smart contracts in the blockchain then after the movie is viewed the the ballance will be deducted from the user's wallet when the movie is viewed 
+
+in the webiste the frontend need to be really good lean and should have nice element to impress the user and should be responsive and should have a nice ui/ux make it in dark mood
+
+lets start with creat vite react app and install tailwind css and appwrite
+
+auth 0 login and signup page 
+
